@@ -8,6 +8,7 @@ Handles:
    via Reciprocal Rank Fusion (RRF) with graceful fallbacks.
 """
 
+import logging
 import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -35,6 +36,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import config
 from services.embedding_service import EmbeddingService
+
+logger = logging.getLogger("search_service")
 
 
 class SearchService:
@@ -249,7 +252,11 @@ class SearchService:
                 select=select_fields,
                 top=top_k,
             )
+            logger.info("Search mode: hybrid")
         except Exception as hybrid_err:
+            logger.warning(
+                f"Hybrid search failed with {type(hybrid_err).__name__}, falling back to vector-only search"
+            )
             # Fallback 1: Vector-only search
             try:
                 raw_results = self.search_client.search(
@@ -258,13 +265,18 @@ class SearchService:
                     select=select_fields,
                     top=top_k,
                 )
-            except Exception:
+                logger.info("Search mode: vector-only (fallback)")
+            except Exception as vector_err:
+                logger.warning(
+                    f"Vector-only search failed with {type(vector_err).__name__}, falling back to keyword-only search"
+                )
                 # Fallback 2: Text-only search
                 raw_results = self.search_client.search(
                     search_text=cleaned_query,
                     select=select_fields,
                     top=top_k,
                 )
+                logger.info("Search mode: keyword-only (fallback)")
 
         chunks: List[Dict[str, Any]] = []
         for result in raw_results:

@@ -182,7 +182,7 @@ python scripts/check_foundry.py
 ```
 
 ### 6. Upload Documents to Azure Blob Storage
-Uploads source PDFs from `data/sample_docs/` to the Blob Storage container:
+Uploads source PDFs from `data/sample_docs/` to the Blob Storage container (`scripts/upload_to_blob.py` uploads every PDF found in `data/sample_docs/`, and the four sample policy documents are included in the repository):
 ```powershell
 python scripts/upload_to_blob.py
 ```
@@ -256,7 +256,7 @@ The following runnable commands test each layer of the solution:
 2. **Conversation History Window:** [`services/agent_service.py`](services/agent_service.py) caps conversation history at `MAX_HISTORY_TURNS = 10` messages (which equals **5 question-and-answer pairs / turns**) and truncates each individual message to **1500 characters** (`MAX_HISTORY_CHARS = 1500`) to prevent context window overflow.
 3. **Sources List Granularity:** The returned `sources` list contains all unique chunks retrieved during the search tool call (`top_k=4`), rather than narrowing down to specific sentences cited in the final generated text.
 4. **Text-Match "Not Found" Detection:** Zeroing out sources for unanswerable questions relies on string pattern matching (`is_not_found_response()` in [`services/agent_service.py`](services/agent_service.py)).
-5. **Search Fallback Logging:** If hybrid search encounters an error, [`services/search_service.py`](services/search_service.py) falls back to vector-only and keyword-only search inside a `try...except` block. It currently does not log a warning specifying which fallback mode ran.
+5. **Search Fallback Execution:** If hybrid search encounters an error, [`services/search_service.py`](services/search_service.py) falls back gracefully to vector-only search, followed by keyword-only search. The service logs an `INFO` line indicating which search mode actually executed (`Search mode: hybrid`, `Search mode: vector-only (fallback)`, or `Search mode: keyword-only (fallback)`) and logs a `WARNING` with the exception type whenever a fallback is triggered.
 6. **Search Index Capacity & Quotas:** Subject to the provisioned tier and partition quota of the Azure AI Search resource.
 7. **Text-Based PDF Processing:** Text extraction relies on `pypdf`. Scanned image-only PDFs without an OCR text layer will yield empty text chunks.
 8. **No Authentication Layer:** The application MVP does not implement user authentication or role-based access control (RBAC).
