@@ -36,6 +36,7 @@ class EmbeddingService:
         api_version: Optional[str] = None,
         deployment_name: Optional[str] = None,
         expected_dimensions: Optional[int] = None,
+        timeout: float = 30.0,
     ):
         raw_endpoint = endpoint or config.AZURE_OPENAI_ENDPOINT
         self.endpoint = normalize_azure_endpoint(raw_endpoint)
@@ -43,11 +44,13 @@ class EmbeddingService:
         self.api_version = api_version or config.AZURE_OPENAI_API_VERSION or "2024-02-15-preview"
         self.deployment_name = deployment_name or config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
         self.expected_dimensions = expected_dimensions or config.AZURE_OPENAI_EMBEDDING_DIMENSIONS
+        self.timeout = timeout
 
         self.client = AzureOpenAI(
             azure_endpoint=self.endpoint,
             api_key=self.api_key,
             api_version=self.api_version,
+            timeout=self.timeout,
         )
 
     def generate_embedding(self, text: str) -> List[float]:

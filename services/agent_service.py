@@ -7,11 +7,12 @@ capped at 3 iterations.
 """
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from openai import AzureOpenAI, APIError, AuthenticationError, RateLimitError
+from openai import AzureOpenAI, APIError, AuthenticationError, RateLimitError, APITimeoutError
 
 # Add project root directory to Python path if run standalone
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -20,6 +21,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import config
 from services.search_service import search_company_documents
+
+# Configure module-level logger
+logger = logging.getLogger("agent_service")
 
 
 def normalize_azure_endpoint(endpoint: str) -> str:
@@ -64,8 +68,10 @@ AGENT_TOOLS = [
 ]
 
 MAX_TOOL_CALL_ITERATIONS = 3
-MAX_QUESTION_LENGTH = 1000
+MAX_QUESTION_LENGTH = 400
+MAX_HISTORY_CHARS = 1500
 MAX_HISTORY_TURNS = 10
+DEFAULT_TIMEOUT_SECONDS = 30.0
 
 
 def is_not_found_response(answer: str) -> bool:
@@ -112,17 +118,20 @@ class AgentService:
         api_key: Optional[str] = None,
         api_version: Optional[str] = None,
         chat_deployment: Optional[str] = None,
+        timeout: float = DEFAULT_TIMEOUT_SECONDS,
     ):
         raw_endpoint = endpoint or config.AZURE_OPENAI_ENDPOINT
         self.endpoint = normalize_azure_endpoint(raw_endpoint)
         self.api_key = api_key or config.AZURE_OPENAI_API_KEY
         self.api_version = api_version or config.AZURE_OPENAI_API_VERSION or "2024-02-15-preview"
         self.chat_deployment = chat_deployment or config.AZURE_OPENAI_CHAT_DEPLOYMENT
+        self.timeout = timeout
 
         self.client = AzureOpenAI(
             azure_endpoint=self.endpoint,
             api_key=self.api_key,
             api_version=self.api_version,
+            timeout=self.timeout,
         )
 
     def validate_question(self, question: Any) -> str:
@@ -144,7 +153,8 @@ class AgentService:
     def sanitize_history(self, history: Any, max_turns: int = MAX_HISTORY_TURNS) -> List[Dict[str, str]]:
         """
         Validates and sanitizes multi-turn conversation history.
-        Only keeps valid user/assistant message dictionaries.
+        Only accepts 'user' and 'assistant' roles (silently drops 'system', 'tool', etc.)
+        and truncates each turn to MAX_HISTORY_CHARS (1500 chars).
         """
         if not history or not isinstance(history, list):
             return []
@@ -157,7 +167,7 @@ class AgentService:
                 if role in ("user", "assistant") and isinstance(content, str) and content.strip():
                     sanitized.append({
                         "role": role,
-                        "content": content.strip()[: MAX_QUESTION_LENGTH * 2],
+                        "content": content.strip()[:MAX_HISTORY_CHARS],
                     })
 
         return sanitized[-max_turns:]
@@ -178,6 +188,9 @@ class AgentService:
         valid_question = self.validate_question(question)
         sanitized_history = self.sanitize_history(history)
 
+        trunc_q = valid_question[:80] + ("..." if len(valid_question) > 80 else "")
+        logger.info(f"Agent processing question: '{trunc_q}' (history turns: {len(sanitized_history)})")
+
         messages: List[Dict[str, Any]] = [
             {"role": "system", "content": SYSTEM_PROMPT},
         ]
@@ -192,6 +205,7 @@ class AgentService:
         retrieved_sources: List[Dict[str, Any]] = []
         seen_chunk_ids = set()
         iterations = 0
+        total_tool_calls = 0
 
         while iterations < MAX_TOOL_CALL_ITERATIONS:
             iterations += 1
@@ -214,13 +228,16 @@ class AgentService:
             if not message.tool_calls:
                 final_answer = message.content or ""
                 sources = [] if is_not_found_response(final_answer) else retrieved_sources
+                logger.info(f"Agent answered directly (iterations: {iterations}, tool calls: {total_tool_calls})")
                 return {
                     "answer": final_answer,
                     "sources": sources,
+                    "tool_calls_count": total_tool_calls,
                 }
 
             # Handle Tool Calls requested by the model
             for tool_call in message.tool_calls:
+                total_tool_calls += 1
                 function_name = tool_call.function.name
                 arguments_str = tool_call.function.arguments
 
@@ -231,8 +248,12 @@ class AgentService:
                     except Exception:
                         search_query = valid_question
 
+                    trunc_sq = search_query[:80] + ("..." if len(search_query) > 80 else "")
+                    logger.info(f"Executing tool 'search_company_documents' (query: '{trunc_sq}')")
+
                     # Execute Azure AI Search
                     search_results = search_company_documents(query=search_query, top_k=4)
+                    logger.info(f"Retrieved {len(search_results)} chunk(s) from search index")
 
                     # Track verified sources
                     for chunk in search_results:
@@ -263,7 +284,7 @@ class AgentService:
                         "content": tool_content,
                     })
                 else:
-                    # Unknown tool fallback
+                    logger.warning(f"Unknown tool requested by model: '{function_name}'")
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
@@ -272,6 +293,7 @@ class AgentService:
                     })
 
         # If loop reached max iterations without concluding, make one final call without tools
+        logger.info(f"Reached MAX_TOOL_CALL_ITERATIONS ({MAX_TOOL_CALL_ITERATIONS}). Requesting final synthesis.")
         final_response = self.client.chat.completions.create(
             model=self.chat_deployment,
             messages=messages,
@@ -284,6 +306,7 @@ class AgentService:
         return {
             "answer": final_answer,
             "sources": sources,
+            "tool_calls_count": total_tool_calls,
         }
 
 

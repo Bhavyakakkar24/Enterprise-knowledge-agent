@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # List of required environment variables to validate on startup
-# Note: AZURE_OPENAI_API_VERSION is omitted here to support flexible Foundry endpoints.
+# Note: AZURE_OPENAI_API_VERSION and FLASK_DEBUG are omitted here to support flexible defaults.
 REQUIRED_VARS = [
     "AZURE_OPENAI_ENDPOINT",
     "AZURE_OPENAI_API_KEY",
@@ -29,7 +29,6 @@ REQUIRED_VARS = [
     "AZURE_SEARCH_API_KEY",
     "AZURE_SEARCH_INDEX_NAME",
     "FLASK_PORT",
-    "FLASK_DEBUG",
 ]
 
 # Identify any missing or empty required variables
@@ -63,4 +62,4 @@ AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME", "").strip()
 
 # Flask Application Configuration
 FLASK_PORT = int(os.getenv("FLASK_PORT", "5000"))
-FLASK_DEBUG = os.getenv("FLASK_DEBUG", "True").strip().lower() in ("true", "1", "yes")
+FLASK_DEBUG = os.getenv("FLASK_DEBUG", "False").strip().lower() in ("true", "1", "yes")

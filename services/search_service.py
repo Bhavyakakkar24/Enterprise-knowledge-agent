@@ -63,12 +63,17 @@ class SearchService:
 
         self.credential = AzureKeyCredential(self.api_key)
         self.index_client = SearchIndexClient(
-            endpoint=self.endpoint, credential=self.credential
+            endpoint=self.endpoint,
+            credential=self.credential,
+            connection_timeout=10.0,
+            read_timeout=10.0,
         )
         self.search_client = SearchClient(
             endpoint=self.endpoint,
             index_name=self.index_name,
             credential=self.credential,
+            connection_timeout=10.0,
+            read_timeout=10.0,
         )
         self._embedding_service: Optional[EmbeddingService] = None
 

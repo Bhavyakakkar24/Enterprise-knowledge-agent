@@ -35,7 +35,9 @@ class BlobService:
 
         try:
             self.blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
-                self.connection_string
+                self.connection_string,
+                connection_timeout=15.0,
+                read_timeout=15.0,
             )
             self.container_client: ContainerClient = self.blob_service_client.get_container_client(
                 self.container_name
