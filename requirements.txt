@@ -1,0 +1,20 @@
+# Flask web framework for backend REST API and serving the UI
+flask>=3.0.0
+
+# Reads configuration and secrets from .env into os.environ
+python-dotenv>=1.0.0
+
+# Official client for Azure OpenAI / Foundry chat completions and embeddings
+openai>=1.14.0
+
+# Official Azure SDK to access raw PDF documents in Azure Blob Storage
+azure-storage-blob>=12.19.0
+
+# Official Azure SDK to create indexes and perform hybrid/vector search in Azure AI Search
+azure-search-documents>=11.4.0
+
+# Authentication library for Azure SDKs
+azure-identity>=1.15.0
+
+# Pure-Python PDF text extraction library
+pypdf>=4.1.0
