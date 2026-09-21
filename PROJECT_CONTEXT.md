@@ -99,18 +99,24 @@ Azure AI Search (services/search_service.py)
 * **Endpoint:** `POST /api/chat`
 * **Request Body:**
   ```json
-  { "question": "What is the annual leave policy?" }
+  {
+    "question": "What is the annual leave policy?",
+    "history": [
+      { "role": "user", "content": "Hello" },
+      { "role": "assistant", "content": "Hi! How can I assist you with company policies today?" }
+    ]
+  }
   ```
 * **Success Response (200 OK):**
   ```json
   {
-    "answer": "According to the HR policy, employees are entitled to 20 days of paid annual leave...",
+    "answer": "Full-time employees at Acme Corp receive 25 paid annual leave days per calendar year...",
     "sources": [
-      { "document": "HR_Policy.pdf", "chunk_id": "hr_001" }
+      { "document": "sample_hr_policy.pdf", "chunk_id": "sample_hr_policy.pdf_p2_c001", "page_number": 2 }
     ]
   }
   ```
-* **Error Response (400/500):**
+* **Error Response (400/429/500/502/504):**
   ```json
   { "error": "Descriptive error message" }
   ```
@@ -130,29 +136,29 @@ Azure AI Search (services/search_service.py)
 
 ## 8. Progress Log
 
-### Day 0 — Setup & Architecture Foundation (Current)
+### Day 0 — Setup & Architecture Foundation (Completed)
 * [x] Defined complete project architecture and context in `PROJECT_CONTEXT.md`.
-* [x] Created clean directory structure with placeholders for services, scripts, templates, and static assets.
+* [x] Created clean directory structure with services, scripts, templates, and static assets.
 * [x] Created `.gitignore` to protect `.venv` and secrets.
 * [x] Created `.env.example` with required environment variable templates.
 * [x] Defined `requirements.txt` with minimal required packages.
 * [x] Created `README.md` quickstart stub.
 
-### Day 1 — Storage, Ingestion & Azure Search (Planned)
-* [ ] Verify connectivity with Azure Foundry (Azure OpenAI) and Azure Storage.
-* [ ] Implement PDF text extraction and chunking (`services/document_processor.py`).
-* [ ] Implement embedding generator (`services/embedding_service.py`).
-* [ ] Implement Azure Blob Storage loader (`services/blob_service.py`).
-* [ ] Create search index and ingest chunks into Azure AI Search (`services/search_service.py`, `scripts/ingest.py`).
+### Day 1 — Storage, Ingestion & Azure Search (Completed)
+* [x] Verified connectivity with Azure Foundry (Azure OpenAI) and Azure Storage.
+* [x] Implemented PDF text extraction and chunking (`services/document_processor.py`).
+* [x] Implemented embedding generator (`services/embedding_service.py`).
+* [x] Implemented Azure Blob Storage loader (`services/blob_service.py`).
+* [x] Created search index and ingested chunks into Azure AI Search (`services/search_service.py`, `scripts/ingest.py`).
 
-### Day 2 — Agent Loop & Backend API (Planned)
-* [ ] Implement custom agent loop with tool-calling (`services/agent_service.py`).
-* [ ] Connect `search_company_documents` tool to Azure AI Search.
-* [ ] Implement Flask endpoints (`app.py`, `GET /api/health`, `POST /api/chat`).
-* [ ] Add backend error handling and response grounding.
+### Day 2 — Agent Loop & Backend API (Completed)
+* [x] Implemented custom agent loop with tool-calling (`services/agent_service.py`).
+* [x] Connected `search_company_documents` tool to Azure AI Search.
+* [x] Implemented Flask endpoints (`app.py`, `GET /api/health`, `POST /api/chat`).
+* [x] Added backend error handling and response grounding.
 
-### Day 3 — Frontend UI & End-to-End Verification (Planned)
-* [ ] Build responsive chat UI (`templates/index.html`, `static/style.css`, `static/app.js`).
-* [ ] Display chat history, markdown answers, source tags, and loading states.
-* [ ] Run end-to-end user query testing with sample company documents.
-* [ ] Final project cleanup and documentation review.
+### Day 3 — Frontend UI & Hardening (Completed)
+* [x] Built responsive chat UI (`templates/index.html`, `static/style.css`, `static/app.js`).
+* [x] Displayed chat history, source tags, and in-bubble animated loading states.
+* [x] Hardened backend: structured request logging (status, duration, tool call count), timeouts, clean JSON error responses, 400 char question limit, 1500 char history turns limit, and role filtering.
+* [x] End-to-end testing across empty, oversized, policy, and general questions.
