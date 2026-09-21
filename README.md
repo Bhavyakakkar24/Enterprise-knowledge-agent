@@ -15,11 +15,11 @@ A working, hardened enterprise AI assistant built with **Flask**, **Azure OpenAI
 
 | # | Team Member | Contribution / Role |
 | :-: | :--- | :--- |
-| 1 | **Bhavya Kakkar** | TODO (contribution) |
-| 2 | **Saamya Singh** | TODO (contribution) |
-| 3 | **Varinda** | TODO (surname/roll number if required; contribution) |
-| 4 | **Garima** | TODO (surname/roll number if required; contribution) |
-| 5 | **Shriya** | TODO (surname/roll number if required; contribution) |
+| 1 | **Bhavya Kakkar** | Designed and implemented the custom AI agent loop (services/agent_service.py) and the Flask API (app.py), including tool-calling logic, the 3-iteration cap, conversation history handling, and input validation. |
+| 2 | **Saamya Singh** | Set up and configured all Azure resources (Foundry deployments, Blob Storage, Azure AI Search), managed environment configuration and secrets (config.py, .env.example, .gitignore), and maintained the GitHub repository. |
+| 3 | **Varinda [surname]** | Designed and built the frontend chat interface (templates/index.html, static/style.css, static/app.js), including the sources panel, loading states, and error recovery. |
+| 4 | **Garima [surname]** | Built the document ingestion pipeline: PDF text extraction and chunking (services/document_processor.py), embedding generation (services/embedding_service.py), and hybrid search with Azure AI Search (services/search_service.py, scripts/ingest.py). |
+| 5 | **Shriya [surname]** | Conducted end-to-end testing of the assistant, verified answers against source documents, and wrote the project documentation including limitations, responsible AI considerations, and testing results. |
 
 > **AI Assistants Used During Development:**  
 > * **Antigravity** (an agentic AI coding environment) was used for code implementation and Git commits.  
