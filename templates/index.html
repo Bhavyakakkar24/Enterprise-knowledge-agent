@@ -2,13 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company AI Assistant</title>
-    <!-- Frontend layout to be implemented on Day 3 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus — Enterprise Knowledge Assistant</title>
+    <meta name="description" content="Nexus: Official enterprise AI assistant for querying company policies, benefits, and guidelines.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Chat UI structure will be built here -->
+    <div id="app-container">
+        <!-- Top Application Header -->
+        <header id="main-header">
+            <div class="header-left">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 4V20L19 4V20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="header-titles">
+                    <h1 class="header-title">Nexus</h1>
+                    <span class="header-status">
+                        <span class="status-dot"></span> Enterprise Knowledge Assistant
+                    </span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="clear-chat-btn" class="header-btn" title="Clear conversation">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span>Clear</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Messages Container -->
+        <main id="chat-wrapper">
+            <div id="messages-container" role="log" aria-live="polite">
+                <!-- Welcome Hero Banner (Empty State) -->
+                <div id="welcome-hero" class="welcome-card">
+                    <div class="welcome-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"></path>
+                        </svg>
+                    </div>
+                    <h2>Welcome to Nexus</h2>
+                    <p>Your enterprise knowledge assistant. Ask anything about company policies, leave entitlements, remote work guidelines, or HR procedures.</p>
+                    
+                    <div class="suggestions-grid">
+                        <button class="suggestion-chip" data-question="How many vacation days do I get?">
+                            🌴 How many vacation days do I get?
+                        </button>
+                        <button class="suggestion-chip" data-question="What's the remote work policy?">
+                            💻 What's the remote work policy?
+                        </button>
+                        <button class="suggestion-chip" data-question="What is the notice period for resignation?">
+                            📋 What is the notice period for resignation?
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages will be appended dynamically by app.js here -->
+            </div>
+        </main>
+
+        <!-- Bottom Input & Send Form -->
+        <footer id="chat-input-bar">
+            <!-- Empty state quick prompt chips above input -->
+            <div id="quick-prompts" class="quick-prompts">
+                <button type="button" class="quick-prompt-btn" data-question="How many vacation days do I get?">🌴 Vacation days</button>
+                <button type="button" class="quick-prompt-btn" data-question="What's the remote work policy?">💻 Remote work policy</button>
+                <button type="button" class="quick-prompt-btn" data-question="What is the notice period for resignation?">📋 Notice period</button>
+            </div>
+
+            <form id="chat-form" novalidate>
+                <div class="input-container">
+                    <textarea 
+                        id="chat-input" 
+                        name="question" 
+                        rows="1" 
+                        placeholder="Ask a question about company policies..." 
+                        aria-label="Ask a question about company policies"
+                        maxlength="1000"
+                        required></textarea>
+                    <button type="submit" id="send-button" title="Send message (Enter)" aria-label="Send message">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+            <div class="footer-caption">
+                Grounded with Azure AI Search & OpenAI &bull; Internal confidential use
+            </div>
+        </footer>
     </div>
+
+    <script src="/static/app.js"></script>
 </body>
 </html>
