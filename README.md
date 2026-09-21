@@ -1,27 +1,74 @@
 # Company AI Assistant — RAG + AI Agent on Microsoft Azure
 
+> **Course & Topic:** Chitkara University — INBIOT AI-103 Group Project (Topic 28: Enterprise Knowledge Agent)  
+> **Repository:** [https://github.com/Bhavyakakkar24/Enterprise-knowledge-agent](https://github.com/Bhavyakakkar24/Enterprise-knowledge-agent)  
+> **Demo Video:** TODO (YouTube link to be added)
+
 A working, hardened enterprise AI assistant built with **Flask**, **Azure OpenAI (Microsoft Foundry)**, **Azure AI Search**, and **Azure Blob Storage**. Employees can ask questions in a modern web chat interface; a custom tool-calling agent loop inspects the query, retrieves relevant policy chunks via **Hybrid Search (BM25 + Dense Vector)**, and synthesizes accurate, grounded answers citing verified sources.
 
 ---
 
-## 1. Overview
+## Team Information
 
-The **Company AI Assistant (Nexus)** is an internal enterprise tool that enables employees to query official company documentation using natural language. The system indexes four core corporate policy documents:
+| Team Name | TODO |
+| :--- | :--- |
+
+| # | Team Member | Contribution / Role |
+| :-: | :--- | :--- |
+| 1 | **Bhavya Kakkar** | TODO (contribution) |
+| 2 | **Saamya Singh** | TODO (contribution) |
+| 3 | **Varinda** | TODO (surname/roll number if required; contribution) |
+| 4 | **Garima** | TODO (surname/roll number if required; contribution) |
+| 5 | **Shriya** | TODO (surname/roll number if required; contribution) |
+
+> **AI Assistants Used During Development:**  
+> * **Antigravity** (an agentic AI coding environment) was used for code implementation and Git commits.  
+> * **Claude** (Anthropic) was used for project planning, the day-wise roadmap, and step-by-step guidance.  
+> * All AI-generated code was reviewed and tested by the team.
+
+---
+
+## 1. Problem Statement & Solution Overview
+
+### Problem Statement
+In modern enterprises, employees lose valuable working time manually searching through long, fragmented corporate policy documents (e.g., HR manuals, IT security standards, codes of conduct, and travel & expense guidelines). This manual search process leads to:
+* **Productivity Loss:** Employees spend significant time hunting across multiple lengthy PDF documents to find specific answers.
+* **Inconsistent Answers:** Different employees receive conflicting or outdated information depending on whom they ask or which document version they view.
+* **Hallucinations from General Chatbots:** Public AI chatbots lack access to internal company rules and frequently invent non-existent company policies.
+
+### Solution Overview
+The **Company AI Assistant (Nexus)** is an internal enterprise tool that enables employees to query official company documentation using natural language:
+* **Grounded Answers:** When asked about company policies, the assistant executes a search against indexed company documents in Azure AI Search and bases its response strictly on verified text chunks.
+* **Source Citations:** Every document-grounded response includes collapsible source references indicating the document name, chunk ID, and page number.
+* **Direct Knowledge Routing:** For general queries (such as general technical definitions, math, or trivia), the assistant responds directly without invoking search tools.
+* **Safe Missing Information Handling:** If the indexed documents do not contain the answer, the assistant clearly states that the documents do not cover the topic rather than guessing.
+* **Multi-Turn Conversation Memory:** Users can ask follow-up questions within the same session with recent context carried forward.
+
+### Indexed Policy Documents
+The system indexes four core corporate policy documents created for Acme Corp:
 * **`sample_hr_policy.pdf`**: Working hours, remote/hybrid work schedules, paid time off, parental and bereavement leave, performance reviews, and resignation notice periods.
 * **`sample_it_security_policy.pdf`**: Multi-factor authentication (MFA), password complexity requirements, device management (BYOD/MDM), data classification, and incident reporting.
 * **`sample_code_of_conduct.pdf`**: Workplace conduct, non-discrimination, harassment reporting, conflicts of interest, and gift acceptance/anti-bribery thresholds.
 * **`sample_expense_travel_policy.pdf`**: Business travel approval tiers, domestic and international per diem meal allowances, flight/hotel booking guidelines, and mileage reimbursements.
 
-### Key Capabilities
-* **Grounded Answers:** When asked about company policies, the assistant executes a search against indexed company documents in Azure AI Search and bases its response strictly on verified text chunks.
-* **Source Citations:** Every document-grounded response includes collapsible source references indicating the document name, chunk ID, and page number.
-* **Direct Knowledge Routing:** For general queries (such as math or general trivia), the assistant responds directly without invoking search tools.
-* **Safe Missing Information Handling:** If the indexed documents do not contain the answer, the assistant clearly states that the documents do not cover the topic rather than guessing.
-* **Multi-Turn Conversation Memory:** Users can ask follow-up questions within the same session with recent context carried forward.
+---
+
+## 2. AI-103 Concepts Applied
+
+The following core AI-103 concepts are implemented and verified in this codebase:
+
+| AI-103 Concept | Implementation in this Project | Verified Source File(s) |
+| :--- | :--- | :--- |
+| **Generative AI & LLM Reasoning** | Uses a Microsoft Foundry-deployed chat model (`gpt-4.1-mini`) for intent classification, tool decision-making, and grounded response synthesis. | [`services/agent_service.py`](services/agent_service.py) |
+| **Dense Vector Embeddings** | Generates 1536-dimensional semantic dense vectors using `text-embedding-3-small` for both offline PDF chunk indexing and online search queries. | [`services/embedding_service.py`](services/embedding_service.py)<br>[`scripts/ingest.py`](scripts/ingest.py) |
+| **Retrieval-Augmented Generation (RAG)** | Implements an end-to-end RAG pattern: user query &rarr; query embedding &rarr; Azure AI Search retrieval &rarr; context injection &rarr; grounded answer with source citations. | [`services/agent_service.py`](services/agent_service.py)<br>[`services/search_service.py`](services/search_service.py) |
+| **Hybrid Search (BM25 + Dense Vectors)** | Combines lexical keyword matching (BM25) with vector search (HNSW cosine similarity) using Reciprocal Rank Fusion (RRF) for optimal precision on policy codes, numbers, and conceptual queries. | [`services/search_service.py`](services/search_service.py) |
+| **AI Agent & Tool Calling** | Custom agent loop using model tool calling (`search_company_documents`). The agent autonomously decides whether to search or answer directly, with an execution cap of 3 iterations to prevent infinite loops. | [`services/agent_service.py`](services/agent_service.py) |
+| **Responsible AI & Guardrails** | Implements input validation (400 chars max), history sanitization (1500 chars/msg, 10 messages max, user/assistant role filtering), private blob storage, localhost network binding (`127.0.0.1`), timeout protections (30s/10s), and "not found" fallback handling. | [`app.py`](app.py)<br>[`services/agent_service.py`](services/agent_service.py)<br>[`config.py`](config.py) |
 
 ---
 
-## 2. Architecture & Ingestion Flow
+## 3. Architecture & Ingestion Flow
 
 ```mermaid
 flowchart TD
@@ -77,7 +124,7 @@ As implemented in [`services/search_service.py`](services/search_service.py), qu
 
 ---
 
-## 3. Search Methods: Keyword vs. Vector vs. Hybrid
+## 4. Search Methods: Keyword vs. Vector vs. Hybrid
 
 | Search Method | How It Works | Strengths | Limitations |
 | :--- | :--- | :--- | :--- |
@@ -89,7 +136,7 @@ As implemented in [`services/search_service.py`](services/search_service.py), qu
 
 ---
 
-## 4. Custom Agent Loop vs. Azure Foundry Agent Service
+## 5. Custom Agent Loop vs. Azure Foundry Agent Service
 
 Microsoft Foundry Agent Service is a fully managed cloud service that hosts autonomous AI agents with managed memory, tool execution, and thread storage on Azure infrastructure.
 
@@ -102,20 +149,38 @@ This project deliberately implements a **custom Python agent loop** built inside
 
 ---
 
-## 5. Azure Resources & Models
+## 6. Technology Stack & Azure Services
 
-| Resource | Purpose | Configuration / Deployment |
+### Runtime & Core Frameworks
+* **Python Version:** `Python 3.12+` (Tested on Windows with PowerShell).
+* **Backend:** Flask (`flask>=3.0.0`) REST API server.
+* **Frontend:** Plain HTML5, CSS3, and Vanilla JavaScript (`fetch` API).
+
+### Python Dependencies ([`requirements.txt`](requirements.txt))
+| Package Name | Minimum Version | Purpose in Solution |
 | :--- | :--- | :--- |
-| **Azure AI Foundry / OpenAI** | Chat completions & reasoning | Deployment: `gpt-4.1-mini` |
-| **Azure AI Foundry / OpenAI** | Dense vector embedding generation | Deployment: `text-embedding-3-small` (1536 dimensions) |
-| **Azure AI Search** | Hybrid index storage & RRF retrieval | Index: `company-knowledge-index` (HNSW + BM25) |
-| **Azure Blob Storage** | Private object storage for source PDFs | Container: `company-docs` |
+| `flask` | `>=3.0.0` | Backend web framework, REST routing, and static UI file serving. |
+| `python-dotenv` | `>=1.0.0` | Loads secrets and configuration from local `.env` into environment variables. |
+| `openai` | `>=1.14.0` | Official client SDK for Azure OpenAI / Foundry chat completions and embeddings. |
+| `azure-storage-blob` | `>=12.19.0` | Official SDK to connect to Azure Blob Storage and upload/download PDF documents. |
+| `azure-search-documents` | `>=11.4.0` | Official SDK to create indexes, upload chunk payloads, and perform hybrid searches. |
+| `azure-identity` | `>=1.15.0` | Authentication library for Azure service clients. |
+| `pypdf` | `>=4.1.0` | Pure-Python PDF parsing library used for text extraction across pages. |
+| `httpx2` *(Dependency)* | Underlying SDK | Low-level HTTP transport library used by the OpenAI SDK. |
 
-*(All endpoints and keys are configured via environment variables; no real secrets are stored in source code.)*
+### Azure AI Services & Cloud Models
+| Azure Resource | Model / Deployment Name | Configuration & Specifications |
+| :--- | :--- | :--- |
+| **Azure AI Foundry / Azure OpenAI** | `gpt-4.1-mini` | Chat completion, intent recognition, tool calling, and grounded response synthesis. |
+| **Azure AI Foundry / Azure OpenAI** | `text-embedding-3-small` | Dense vector embedding generation (**1536 dimensions**). |
+| **Azure AI Search** | `company-knowledge-index` | Hybrid index combining BM25 keyword search and HNSW vector similarity. |
+| **Azure Blob Storage** | `company-docs` | Private cloud container for source policy PDF documents. |
+
+*(All keys, endpoints, and credentials are configured via environment variables; no secrets or real endpoints are stored in source code.)*
 
 ---
 
-## 6. Prerequisites & Azure Portal Guide
+## 7. Prerequisites & Azure Portal Guide
 
 ### Prerequisites
 * **Python 3.12+** on Windows (PowerShell recommended).
@@ -146,7 +211,7 @@ This project deliberately implements a **custom Python agent loop** built inside
 
 ---
 
-## 7. Setup & Installation (PowerShell on Windows)
+## 8. Setup & Installation (PowerShell on Windows)
 
 ### 1. Clone the Repository
 ```powershell
@@ -170,7 +235,7 @@ Create your local `.env` configuration file from `.env.example`:
 ```powershell
 Copy-Item .env.example .env
 ```
-Fill in the credentials as located using the portal guide in Section 6.
+Fill in the credentials as located using the portal guide in Section 7.
 
 > **Note on Network Security & Debug Mode:**
 > * [`app.py`](app.py) binds strictly to `127.0.0.1` (localhost only) to prevent accidental local network exposure.
@@ -201,7 +266,7 @@ Open your browser and navigate to: **`http://127.0.0.1:5000`**
 
 ---
 
-## 8. Demo & Test Questions
+## 9. Demo & Test Questions
 
 | # | Document & Topic | Sample Question | Expected Assistant Behavior & Citations |
 | :--- | :--- | :--- | :--- |
@@ -219,7 +284,7 @@ Open your browser and navigate to: **`http://127.0.0.1:5000`**
 
 ---
 
-## 9. Testing Checklist
+## 10. Testing Checklist
 
 The following runnable commands test each layer of the solution:
 
@@ -250,7 +315,60 @@ The following runnable commands test each layer of the solution:
 
 ---
 
-## 10. Known Limitations
+## 11. Testing and Results
+
+**Test Date:** 22 September 2026  
+**Test Environment:** Windows 11, PowerShell, Python 3.14.7 (Python 3.12+ compatible), local Flask server running on `127.0.0.1:5000`.  
+**Execution Method:** Tests 1–8 were executed programmatically against the running Flask API (`POST /api/chat`) using a test harness (`scratch/run_all_9_tests.py`), with real request logs, tool call counts, and search execution modes captured from the server. Test 3 was executed within the same conversation session as Test 1 to verify multi-turn history propagation. Test 9 was validated manually in the browser UI. All factual numbers were verified against the ground-truth PDFs in `data/sample_docs/`.
+
+### Verified Test Results
+
+| # | Test Scenario & Input Question | Actual Output Summary | Sources Returned | Tool Calls | Search Mode | Result |
+| :-: | :--- | :--- | :--- | :-: | :--- | :-: |
+| **1** | **Paid Annual Leave**<br>*"How many days of paid annual leave do full-time employees get?"* | Full-time employees at Acme Corp are entitled to **25 paid annual leave days** per calendar year. These days accrue at a rate of **2.08 days per completed month** of service. | `sample_hr_policy.pdf` (Page 2, 3) | 1 | Hybrid | **Pass** |
+| **2** | **International Meal Allowance**<br>*"What is the daily meal allowance for international business travel?"* | The daily meal allowance (per diem) for international business travel at Acme Corp is **$100 USD per day**, covering breakfast, lunch, and dinner combined. | `sample_expense_travel_policy.pdf` (Page 1)<br>`sample_hr_policy.pdf` (Page 2) | 1 | Hybrid | **Pass** |
+| **3** | **Follow-up (with Test 1 History)**<br>*"Can I carry unused days over to next year?"* | You may carry over a **maximum of 5 unused annual leave days** into the next calendar year. These carried-over days **must be used before March 31** of that new year, or they will lapse. | `sample_hr_policy.pdf` (Page 2, 3) | 1 | Hybrid | **Pass** |
+| **4** | **General Technical Definition**<br>*"What is a firewall?"* | Correctly defined a firewall as a network security device/software that monitors and controls incoming/outgoing network traffic based on predetermined security rules. | `[]` (None) | 0 | None (Direct) | **Pass** |
+| **5** | **Missing / Out-of-Scope Policy**<br>*"What is the company's policy on stock option vesting?"* | Correctly stated that information regarding stock option vesting could not be found in the available company documentation. | `[]` (None) | 1 | Hybrid | **Pass** |
+| **6** | **Ambiguous General Concept**<br>*"What's an agent?"* | Explained that "agent" has different meanings depending on context (software, business, real estate) and asked for clarification. | `[]` (None) | 0 | None (Direct) | **Pass** |
+| **7** | **Empty Input Validation**<br>*`"   "` (whitespace only)* | Server rejected with **HTTP 400 Bad Request**: `"The 'question' parameter cannot be empty or whitespace only."` | N/A | 0 | None | **Pass** |
+| **8** | **Input Length Validation**<br>*Question exceeding 400 characters (410 chars)* | Server rejected with **HTTP 400 Bad Request**: `"Question exceeds maximum allowed length of 400 characters."` | N/A | 0 | None | **Pass** |
+| **9** | **Server Down UI Recovery**<br>*Server stopped, question sent from UI* | Browser UI displayed `"Unable to connect to the assistant server. Please verify that the server is running."` and re-enabled the input box and send button. | N/A | N/A | N/A | **Pass** *(Manual)* |
+
+---
+
+## 12. Responsible AI & Safety Controls
+
+This project implements Responsible AI principles, grounded directly in verified code implementations across privacy, security, fairness, transparency, reliability, and human oversight:
+
+### 1. Privacy & Data Governance
+* **Private Cloud Storage:** Source policy PDFs reside exclusively in a private Azure Blob Storage container (`company-docs`) with public anonymous access disabled.
+* **Localhost Binding:** In [`app.py`](app.py), Flask binds strictly to `127.0.0.1` (localhost only) rather than `0.0.0.0`, preventing accidental exposure across local area networks.
+* **Zero Secret Leakage in Logs:** Application logging explicitly redacts sensitive request headers and logs only non-sensitive metadata (timestamp, endpoint, status code, duration, tool call count, truncated question). HTTP client loggers (`httpx2`, `azure.core`) are set to `WARNING` level to prevent logging sensitive authorization headers or document tokens.
+
+### 2. Security & Guardrails
+* **Strict Input Length Limits:** Incoming questions are capped at 400 characters (`MAX_QUESTION_LENGTH = 400`) in [`services/agent_service.py`](services/agent_service.py), rejecting buffer overflow attempts or oversized prompt injection payloads via HTTP 400.
+* **Role-Restricted History Sanitization:** The `sanitize_history()` function accepts only `"user"` and `"assistant"` message roles from the client payload, silently discarding any client-injected `"system"` or `"tool"` roles.
+* **Context Budget Caps:** History turns are limited to `MAX_HISTORY_TURNS = 10` messages (5 Q&A turns) and truncated to `MAX_HISTORY_CHARS = 1500` characters per turn to protect model context windows.
+
+### 3. Reliability & System Stability
+* **Loop Prevention Cap:** The agent tool-calling loop is strictly capped at a maximum of 3 iterations (`MAX_TOOL_ITERATIONS = 3`), guaranteeing that the agent will never enter an unbounded recursive loop.
+* **Client Timeouts:** Network calls enforce deterministic timeouts (30 seconds for Azure OpenAI chat completions, 10 seconds for Azure AI Search), preventing requests from hanging indefinitely on network failure.
+* **Search Fallback Cascade:** If Azure AI Search hybrid search fails, the system automatically falls back to vector-only and then keyword-only search, logging the executed mode and exception type.
+
+### 4. Transparency & Explainability
+* **Verifiable Source Citations:** Every document-grounded response includes source metadata referencing the source document filename and page number, enabling employees to cross-verify answers against official documents.
+* **Safe Missing Information Handling:** When documents do not contain the answer, the assistant clearly states the absence of information rather than inventing policies, and source citations are zeroed out (`sources: []`).
+
+### Honest Gaps & Current Limitations
+* **No Authentication / RBAC:** The current MVP does not implement user login or role-based document access control; all users querying the endpoint have access to all indexed policies.
+* **Fictional Sample Documents:** All four policy documents are fictional sample documents for "Acme Corp" created for demonstration and academic evaluation.
+* **Text-Match "Not Found" Filter:** Zeroing out citations on missing information relies on heuristic string matching (`is_not_found_response()`) rather than a dedicated secondary classifier.
+* **Human Oversight Advice:** The assistant is an informational aid; employees should always consult human HR or IT representatives for binding organizational decisions.
+
+---
+
+## 13. Known Limitations
 
 1. **Browser-Only Conversation Memory:** Conversation history is stored in the browser's JavaScript memory (`conversationHistory` in [`static/app.js`](static/app.js)). Refreshing the browser tab resets memory to an empty state.
 2. **Conversation History Window:** [`services/agent_service.py`](services/agent_service.py) caps conversation history at `MAX_HISTORY_TURNS = 10` messages (which equals **5 question-and-answer pairs / turns**) and truncates each individual message to **1500 characters** (`MAX_HISTORY_CHARS = 1500`) to prevent context window overflow.
@@ -265,12 +383,35 @@ The following runnable commands test each layer of the solution:
 
 ---
 
-## 11. Future Improvements
+## 14. Future Improvements
 
+* **Foundry IQ & MCP Retrieval Architecture:** In future iterations, migrate document retrieval to a managed **Foundry IQ** knowledge base on Azure AI Search and expose it to agent workflows through **Model Context Protocol (MCP)**. *(Note: This current project implements the entire retrieval and chunking pipeline manually via the Azure Python SDKs in [`services/search_service.py`](services/search_service.py) and [`scripts/ingest.py`](scripts/ingest.py) and does not currently use Foundry IQ or MCP).*
 * **Persistent User Sessions:** Integrate database-backed history storage (e.g. Azure Cosmos DB or PostgreSQL) keyed by session IDs or authenticated user accounts.
-* **Enterprise Authentication:** Integrate Microsoft Entra ID (Azure AD) via MSAL for Single Sign-On (SSO) and role-based document access.
+* **Enterprise Authentication:** Integrate Microsoft Entra ID (Azure AD) via MSAL for Single Sign-On (SSO) and role-based document access control.
 * **OCR & Document Intelligence:** Integrate Azure AI Document Intelligence for parsing complex tables, scanned images, and multi-column DOCX/PDF layouts.
 * **Streaming Responses:** Implement Server-Sent Events (SSE) in `app.py` and `app.js` for token-by-token streaming responses.
 * **Sentence-Level Source Attribution:** Use model-generated citation markers `[1]`, `[2]` mapped directly to specific retrieved chunks.
 * **Production Deployment:** Containerize with Docker and deploy to Azure Container Apps or Azure App Service behind a production WSGI server (such as Gunicorn).
 
+---
+
+## 15. Acknowledgements
+
+* **Open-Source Libraries & Frameworks:**
+  * [Flask](https://flask.palletsprojects.com/) (Web framework and REST API)
+  * [python-dotenv](https://github.com/theskumar/python-dotenv) (Environment variable management)
+  * [OpenAI Python SDK](https://github.com/openai/openai-python) (Azure OpenAI integration)
+  * [azure-storage-blob](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob) (Azure Blob Storage client)
+  * [azure-search-documents](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/search/azure-search-documents) (Azure AI Search client)
+  * [azure-identity](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity) (Azure Identity client)
+  * [pypdf](https://github.com/py-pdf/pypdf) (PDF text extraction and parsing)
+  * [httpx2](https://github.com/encode/httpx) (Underlying HTTP transport library for OpenAI SDK)
+  * [Mermaid.js](https://mermaid.js.org/) (Architecture diagram rendering)
+* **Documentation & Cloud Infrastructure:**
+  * [Microsoft Azure Documentation](https://learn.microsoft.com/azure/) for Azure AI Search, Azure OpenAI, and Azure Blob Storage SDKs.
+* **Sample Data Disclaimer:**
+  * The four policy PDF documents (`sample_hr_policy.pdf`, `sample_it_security_policy.pdf`, `sample_code_of_conduct.pdf`, `sample_expense_travel_policy.pdf`) are fictional sample corporate documents created for "Acme Corp" specifically for this university project.
+* **AI Assistants Used During Development:**
+  * **Antigravity** (an agentic AI coding environment) was used for code implementation and Git commits.
+  * **Claude** (Anthropic) was used for project planning, the day-wise roadmap, and step-by-step guidance.
+  * All AI-generated code was reviewed and tested by the team.
