@@ -16,8 +16,8 @@ A working, hardened enterprise AI assistant built with **Flask**, **Microsoft En
 
 | # | Team Member | Contribution / Role |
 | :-: | :--- | :--- |
-| 1 | **Bhavya Kakkar** | Designed and implemented the custom AI agent loop (services/agent_service.py) and the Flask API (app.py), including tool-calling logic, the 3-iteration cap, conversation history handling, and input validation. |
-| 2 | **Saamya Singh** | Set up and configured all Azure resources (Foundry deployments, Blob Storage, Azure AI Search), managed environment configuration and secrets (config.py, .env.example, .gitignore), and maintained the GitHub repository. |
+| 1 | **Bhavya Kakkar** | Designed and implemented the custom AI agent loop (services/agent_service.py) and the Flask API (app.py), including tool-calling logic, the 3-iteration cap, conversation history handling, and input validation; managed environment configuration and secrets (config.py, .env.example, .gitignore), and maintained the GitHub repository. |
+| 2 | **Saamya Singh** | Set up and configured all Azure resources (Foundry deployments, Blob Storage, Azure AI Search). |
 | 3 | **Varinda Dhir** | Designed and built the frontend chat interface (templates/index.html, static/style.css, static/app.js), including the sources panel, loading states, and error recovery. |
 | 4 | **Garima Sharma** | Built the document ingestion pipeline: PDF text extraction and chunking (services/document_processor.py), embedding generation (services/embedding_service.py), and hybrid search with Azure AI Search (services/search_service.py, scripts/ingest.py). |
 | 5 | **Shriya Chhabra** | Conducted end-to-end testing of the assistant, verified answers against source documents, and wrote the project documentation including limitations, responsible AI considerations, and testing results. |
