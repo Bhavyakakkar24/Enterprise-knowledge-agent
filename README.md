@@ -2,9 +2,10 @@
 
 > **Course & Topic:** Chitkara University — INBIOT AI-103 Group Project (Topic 28: Enterprise Knowledge Agent)  
 > **Repository:** [https://github.com/Bhavyakakkar24/Enterprise-knowledge-agent](https://github.com/Bhavyakakkar24/Enterprise-knowledge-agent)  
+> **Live Demo:** [https://nexus-b4d2b3agctd9dea3.uaenorth-01.azurewebsites.net](https://nexus-b4d2b3agctd9dea3.uaenorth-01.azurewebsites.net)  
 > **Demo Video:** TODO (YouTube link to be added)
 
-A working, hardened enterprise AI assistant built with **Flask**, **Azure OpenAI (Microsoft Foundry)**, **Azure AI Search**, and **Azure Blob Storage**. Employees can ask questions in a modern web chat interface; a custom tool-calling agent loop inspects the query, retrieves relevant policy chunks via **Hybrid Search (BM25 + Dense Vector)**, and synthesizes accurate, grounded answers citing verified sources.
+A working, hardened enterprise AI assistant built with **Flask**, **Microsoft Entra ID (MSAL)**, **Azure OpenAI (Microsoft Foundry)**, **Azure AI Search**, and **Azure Blob Storage**, deployed to **Azure App Service**. Employees can sign in via Microsoft SSO, explore the marketing landing page, and ask questions in a modern web chat interface; a custom tool-calling agent loop inspects the query, retrieves relevant policy chunks via **Hybrid Search (BM25 + Dense Vector)**, and synthesizes accurate, grounded answers citing verified sources.
 
 ---
 
@@ -64,7 +65,8 @@ The following core AI-103 concepts are implemented and verified in this codebase
 | **Retrieval-Augmented Generation (RAG)** | Implements an end-to-end RAG pattern: user query &rarr; query embedding &rarr; Azure AI Search retrieval &rarr; context injection &rarr; grounded answer with source citations. | [`services/agent_service.py`](services/agent_service.py)<br>[`services/search_service.py`](services/search_service.py) |
 | **Hybrid Search (BM25 + Dense Vectors)** | Combines lexical keyword matching (BM25) with vector search (HNSW cosine similarity) using Reciprocal Rank Fusion (RRF) for optimal precision on policy codes, numbers, and conceptual queries. | [`services/search_service.py`](services/search_service.py) |
 | **AI Agent & Tool Calling** | Custom agent loop using model tool calling (`search_company_documents`). The agent autonomously decides whether to search or answer directly, with an execution cap of 3 iterations to prevent infinite loops. | [`services/agent_service.py`](services/agent_service.py) |
-| **Responsible AI & Guardrails** | Implements input validation (400 chars max), history sanitization (1500 chars/msg, 10 messages max, user/assistant role filtering), private blob storage, localhost network binding (`127.0.0.1`), timeout protections (30s/10s), and "not found" fallback handling. | [`app.py`](app.py)<br>[`services/agent_service.py`](services/agent_service.py)<br>[`config.py`](config.py) |
+| **Enterprise Auth & Access Control** | Microsoft Entra ID (Azure AD) OAuth 2.0 via MSAL (authorization code flow). Enforces `@login_required` on `/chat` and `/api/chat`, and gates access using an `ALLOWED_USER_EMAILS` allow-list. | [`auth.py`](auth.py)<br>[`app.py`](app.py)<br>[`config.py`](config.py) |
+| **Responsible AI & Guardrails** | Implements input validation (400 chars max), history sanitization (1500 chars/msg, 10 messages max, user/assistant role filtering), private blob storage, timeout protections (30s/10s), and "not found" fallback handling. | [`app.py`](app.py)<br>[`services/agent_service.py`](services/agent_service.py)<br>[`config.py`](config.py) |
 
 ---
 
@@ -161,6 +163,7 @@ This project deliberately implements a **custom Python agent loop** built inside
 | :--- | :--- | :--- |
 | `flask` | `>=3.0.0` | Backend web framework, REST routing, and static UI file serving. |
 | `python-dotenv` | `>=1.0.0` | Loads secrets and configuration from local `.env` into environment variables. |
+| `msal` | `>=1.28.0` | Microsoft Authentication Library for Python to authenticate users via Microsoft Entra ID. |
 | `openai` | `>=1.14.0` | Official client SDK for Azure OpenAI / Foundry chat completions and embeddings. |
 | `azure-storage-blob` | `>=12.19.0` | Official SDK to connect to Azure Blob Storage and upload/download PDF documents. |
 | `azure-search-documents` | `>=11.4.0` | Official SDK to create indexes, upload chunk payloads, and perform hybrid searches. |
@@ -208,6 +211,12 @@ This project deliberately implements a **custom Python agent loop** built inside
 | `AZURE_SEARCH_INDEX_NAME` | Name for the search index to create and query | `company-knowledge-index` |
 | `FLASK_PORT` | Local port for Flask server | `5000` |
 | `FLASK_DEBUG` | Local debug mode flag (`False` recommended) | `False` |
+| `FLASK_SECRET_KEY` | Secret key for Flask session signing | `32-character random string` |
+| `ENTRA_CLIENT_ID` | Azure Portal &rarr; **Microsoft Entra ID** &rarr; **App registrations** &rarr; Selected App &rarr; **Application (client) ID** | `36-char UUID (e.g. c701598b-...)` |
+| `ENTRA_CLIENT_SECRET` | Azure Portal &rarr; **Microsoft Entra ID** &rarr; **App registrations** &rarr; Selected App &rarr; **Certificates & secrets** &rarr; **Value** column | `40-character secret value` |
+| `ENTRA_TENANT_ID` | Azure Portal &rarr; **Microsoft Entra ID** &rarr; **App registrations** &rarr; Selected App &rarr; **Directory (tenant) ID** | `36-char UUID (e.g. bc9cd8e7-...)` |
+| `ENTRA_REDIRECT_URI` | Azure Portal &rarr; **App registrations** &rarr; **Authentication** &rarr; Web Redirect URIs | `http://localhost:5000/auth/callback` (Local)<br>`https://<app-name>.azurewebsites.net/auth/callback` (Production) |
+| `ALLOWED_USER_EMAILS` | Comma-separated list of authorized employee/student emails allowed to sign in | `user1@acme.com,user2@acme.com` |
 
 ---
 
@@ -237,8 +246,8 @@ Copy-Item .env.example .env
 ```
 Fill in the credentials as located using the portal guide in Section 7.
 
-> **Note on Network Security & Debug Mode:**
-> * [`app.py`](app.py) binds strictly to `127.0.0.1` (localhost only) to prevent accidental local network exposure.
+> **Note on Local vs. Production Execution:**
+> * For **local development**, [`app.py`](app.py) runs on `http://localhost:5000`.
 > * `FLASK_DEBUG` defaults to `False`. To enable the interactive debug reloader locally, set `FLASK_DEBUG=True` in `.env`.
 
 ### 5. Verify Connectivity (Optional Diagnostic)
@@ -258,13 +267,26 @@ Extracts text from PDFs, creates chunks (~900 chars with 150 char overlap), gene
 python scripts/ingest.py
 ```
 
-### 8. Start the Web Application
+### 8. Start the Local Web Application
 ```powershell
 python app.py
 ```
-Open your browser and navigate to: **`http://127.0.0.1:5000`**
+Open your browser and navigate to: **`http://localhost:5000`**
 
 ---
+
+### 9. Production Deployment (Azure App Service)
+
+The application is deployed and actively running on **Azure App Service**:
+* **Hosting Platform:** Azure App Service (Linux B1 tier, Python 3.12).
+* **WSGI Production Server:** Hosted via **Gunicorn** (automatically detected and launched by Azure's Oryx build system).
+* **Dynamic Port Handling:** [`app.py`](app.py) dynamically reads `port = int(os.environ.get("PORT", config.FLASK_PORT))` assigned by Azure at runtime.
+* **Production Configuration:** All Azure credentials, Entra ID keys, and allow-lists are injected directly through Azure App Service &rarr; **Settings** &rarr; **Environment variables** (no `.env` file exists on the production host).
+* **Automated CI/CD Pipeline:** Configured via **GitHub Actions** (`.github/workflows/main_nexus.yml`), automatically building, archiving dependencies, and deploying upon every push to the `main` branch.
+* **Live Production URL:** [https://nexus-b4d2b3agctd9dea3.uaenorth-01.azurewebsites.net](https://nexus-b4d2b3agctd9dea3.uaenorth-01.azurewebsites.net)
+
+---
+
 
 ## 9. Demo & Test Questions
 
@@ -343,10 +365,11 @@ This project implements Responsible AI principles, grounded directly in verified
 
 ### 1. Privacy & Data Governance
 * **Private Cloud Storage:** Source policy PDFs reside exclusively in a private Azure Blob Storage container (`company-docs`) with public anonymous access disabled.
-* **Localhost Binding:** In [`app.py`](app.py), Flask binds strictly to `127.0.0.1` (localhost only) rather than `0.0.0.0`, preventing accidental exposure across local area networks.
+* **Localhost & TLS/HTTPS:** For local development, Flask binds locally (`127.0.0.1:5000`); in production on Azure App Service, all communication is strictly enforced over HTTPS with automated TLS certificate management.
 * **Zero Secret Leakage in Logs:** Application logging explicitly redacts sensitive request headers and logs only non-sensitive metadata (timestamp, endpoint, status code, duration, tool call count, truncated question). HTTP client loggers (`httpx2`, `azure.core`) are set to `WARNING` level to prevent logging sensitive authorization headers or document tokens.
 
 ### 2. Security & Guardrails
+* **Microsoft Entra ID Authentication & Email Allow-List:** User access is protected using Microsoft Entra ID (MSAL authorization code flow) in [`auth.py`](auth.py). Following Microsoft authentication, user email claims are verified against an explicit `ALLOWED_USER_EMAILS` allow-list. Unauthenticated visits to `/chat` redirect to `/login`, and `/api/chat` returns HTTP 401 Unauthorized.
 * **Strict Input Length Limits:** Incoming questions are capped at 400 characters (`MAX_QUESTION_LENGTH = 400`) in [`services/agent_service.py`](services/agent_service.py), rejecting buffer overflow attempts or oversized prompt injection payloads via HTTP 400.
 * **Role-Restricted History Sanitization:** The `sanitize_history()` function accepts only `"user"` and `"assistant"` message roles from the client payload, silently discarding any client-injected `"system"` or `"tool"` roles.
 * **Context Budget Caps:** History turns are limited to `MAX_HISTORY_TURNS = 10` messages (5 Q&A turns) and truncated to `MAX_HISTORY_CHARS = 1500` characters per turn to protect model context windows.
@@ -361,7 +384,7 @@ This project implements Responsible AI principles, grounded directly in verified
 * **Safe Missing Information Handling:** When documents do not contain the answer, the assistant clearly states the absence of information rather than inventing policies, and source citations are zeroed out (`sources: []`).
 
 ### Honest Gaps & Current Limitations
-* **No Authentication / RBAC:** The current MVP does not implement user login or role-based document access control; all users querying the endpoint have access to all indexed policies.
+* **Role-Based Access Control (RBAC):** While authentication and email allow-listing are implemented via Microsoft Entra ID, granular role-based policy access control (e.g. restricting specific documents to designated departments) is not yet implemented.
 * **Fictional Sample Documents:** All four policy documents are fictional sample documents for "Acme Corp" created for demonstration and academic evaluation.
 * **Text-Match "Not Found" Filter:** Zeroing out citations on missing information relies on heuristic string matching (`is_not_found_response()`) rather than a dedicated secondary classifier.
 * **Human Oversight Advice:** The assistant is an informational aid; employees should always consult human HR or IT representatives for binding organizational decisions.
@@ -377,8 +400,8 @@ This project implements Responsible AI principles, grounded directly in verified
 5. **Search Fallback Execution:** If hybrid search encounters an error, [`services/search_service.py`](services/search_service.py) falls back gracefully to vector-only search, followed by keyword-only search. The service logs an `INFO` line indicating which search mode actually executed (`Search mode: hybrid`, `Search mode: vector-only (fallback)`, or `Search mode: keyword-only (fallback)`) and logs a `WARNING` with the exception type whenever a fallback is triggered.
 6. **Search Index Capacity & Quotas:** Subject to the provisioned tier and partition quota of the Azure AI Search resource.
 7. **Text-Based PDF Processing:** Text extraction relies on `pypdf`. Scanned image-only PDFs without an OCR text layer will yield empty text chunks.
-8. **No Authentication Layer:** The application MVP does not implement user authentication or role-based access control (RBAC).
-9. **Development Server:** [`app.py`](app.py) runs Flask's built-in development server, which is intended for local testing, not production WSGI deployments.
+8. **Granular RBAC:** All allow-listed users currently have access to all four indexed policy documents; fine-grained per-document or departmental permissions are not enforced.
+9. **Development Server vs. Production:** When running locally via `python app.py`, Flask runs the built-in development server. In production on Azure App Service, the application is hosted with Gunicorn WSGI.
 10. **HTTP Logging Hygiene:** Debug-level logging for HTTP client libraries (`httpx`, `azure.core`) should remain disabled to prevent sensitive tokens or request bodies from being output to terminal logs.
 
 ---
@@ -387,11 +410,11 @@ This project implements Responsible AI principles, grounded directly in verified
 
 * **Foundry IQ & MCP Retrieval Architecture:** In future iterations, migrate document retrieval to a managed **Foundry IQ** knowledge base on Azure AI Search and expose it to agent workflows through **Model Context Protocol (MCP)**. *(Note: This current project implements the entire retrieval and chunking pipeline manually via the Azure Python SDKs in [`services/search_service.py`](services/search_service.py) and [`scripts/ingest.py`](scripts/ingest.py) and does not currently use Foundry IQ or MCP).*
 * **Persistent User Sessions:** Integrate database-backed history storage (e.g. Azure Cosmos DB or PostgreSQL) keyed by session IDs or authenticated user accounts.
-* **Enterprise Authentication:** Integrate Microsoft Entra ID (Azure AD) via MSAL for Single Sign-On (SSO) and role-based document access control.
 * **OCR & Document Intelligence:** Integrate Azure AI Document Intelligence for parsing complex tables, scanned images, and multi-column DOCX/PDF layouts.
 * **Streaming Responses:** Implement Server-Sent Events (SSE) in `app.py` and `app.js` for token-by-token streaming responses.
 * **Sentence-Level Source Attribution:** Use model-generated citation markers `[1]`, `[2]` mapped directly to specific retrieved chunks.
-* **Production Deployment:** Containerize with Docker and deploy to Azure Container Apps or Azure App Service behind a production WSGI server (such as Gunicorn).
+* **Containerization:** Containerize with Docker and deploy to Azure Container Apps or Kubernetes for containerized microservice architectures (standard Azure App Service deployment is currently live).
+
 
 ---
 
