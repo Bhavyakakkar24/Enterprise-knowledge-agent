@@ -11,6 +11,7 @@ Provides REST API and UI endpoints:
 - POST /api/chat: Custom AI Agent chat endpoint with RAG tool calling & memory (login required)
 """
 
+import os
 import logging
 import time
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
@@ -265,8 +266,10 @@ def chat():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", config.FLASK_PORT))
     app.run(
         host="0.0.0.0",
-        port=config.FLASK_PORT,
+        port=port,
         debug=config.FLASK_DEBUG,
     )
+
