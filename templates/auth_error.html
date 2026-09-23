@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Error — Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="auth-page-body">
+    <div class="auth-card-wrapper">
+        <div class="auth-status-card auth-error-card">
+            <div class="auth-icon-circle error-icon-bg">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+
+            <h1 class="auth-card-title">Authentication Could Not Be Completed</h1>
+            
+            <p class="auth-card-subtitle">
+                An issue occurred while communicating with Microsoft Entra ID.
+            </p>
+
+            <div class="auth-card-box">
+                <p>
+                    <strong>Details:</strong> {{ error_description or "The login process was interrupted or an unexpected error occurred." }}
+                </p>
+                {% if error_code %}
+                    <p class="error-code-line">
+                        Error code: <code>{{ error_code }}</code>
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="auth-actions-group">
+                <a href="/login" class="btn btn-hero-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    <span>Try Again</span>
+                </a>
+                <a href="/" class="btn btn-hero-secondary">
+                    <span>Return to Home</span>
+                </a>
+            </div>
+
+            <div class="auth-card-footer">
+                Chitkara University AI-103 Prototype &bull; Synthetic Acme Corp Dataset
+            </div>
+        </div>
+    </div>
+</body>
+</html>

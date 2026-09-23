@@ -18,3 +18,7 @@ azure-identity>=1.15.0
 
 # Pure-Python PDF text extraction library
 pypdf>=4.1.0
+
+# Microsoft Authentication Library (MSAL) for Microsoft Entra ID authentication
+msal>=1.28.0
+

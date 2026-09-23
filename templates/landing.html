@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus — Enterprise Knowledge Assistant</title>
+    <meta name="description" content="Ask your company's policies, get grounded answers in seconds with Nexus Enterprise Knowledge Assistant.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="landing-body">
+    <!-- Navigation Bar -->
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 4V20L19 4V20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="brand-name">Nexus</span>
+                <span class="brand-badge">AI Assistant</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#architecture" class="nav-link">Architecture</a>
+                
+                {% if user and user.email %}
+                    <div class="nav-user-pill">
+                        <span class="user-dot"></span>
+                        <span class="user-email-text">{{ user.name or user.email }}</span>
+                    </div>
+                    <a href="/chat" class="btn btn-nav-primary">Open Assistant</a>
+                    <a href="/logout" class="btn btn-nav-secondary">Sign Out</a>
+                {% else %}
+                    <a href="/login" class="btn btn-nav-secondary">Sign In</a>
+                    <a href="/login" class="btn btn-nav-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Landing Content -->
+    <main class="landing-main">
+        <!-- 1. Hero Section -->
+        <section class="hero-section">
+            <div class="hero-glow-bg"></div>
+            <div class="hero-content">
+                <div class="hero-tag">
+                    <span class="hero-tag-badge">AI-103 Prototype</span>
+                    <span>Grounded RAG with Microsoft Entra ID</span>
+                </div>
+                <h1 class="hero-title">
+                    Ask your company's policies, <br>
+                    <span class="gradient-text">get grounded answers in seconds.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Nexus is an internal enterprise knowledge agent powered by Azure OpenAI and Azure AI Search. 
+                    Retrieve precise policy answers, inspect verified citations, and eliminate corporate search friction.
+                </p>
+
+                <div class="hero-cta-group">
+                    {% if user and user.email %}
+                        <a href="/chat" class="btn btn-hero-primary">
+                            <span>Go to Assistant</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                        <a href="/logout" class="btn btn-hero-secondary">
+                            <span>Logout</span>
+                        </a>
+                    {% else %}
+                        <a href="/login" class="btn btn-hero-primary">
+                            <span>Get Started</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                        <a href="/login" class="btn btn-hero-secondary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <span>Sign In</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="hero-trust-badges">
+                    <div class="trust-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Entra ID Protected</span>
+                    </div>
+                    <div class="trust-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                        <span>Real-Time RAG</span>
+                    </div>
+                    <div class="trust-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>Verified Citations</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. How It Works Section -->
+        <section id="how-it-works" class="landing-section">
+            <div class="section-header">
+                <span class="section-badge">Workflow</span>
+                <h2 class="section-title">How Nexus Works</h2>
+                <p class="section-description">A deterministic, four-step custom agent loop designed for high precision and zero hallucinations.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="step-title">Ask a Question</h3>
+                    <p class="step-text">Employees submit natural language inquiries regarding leave rules, expense thresholds, IT security, or codes of conduct.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="step-title">Agent Tool Decision</h3>
+                    <p class="step-text">The custom agent inspects query intent and decides whether to invoke <code>search_company_documents</code> or answer general knowledge directly.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+                    <h3 class="step-title">Azure Hybrid Retrieval</h3>
+                    <p class="step-text">Azure AI Search performs hybrid BM25 + dense vector similarity with Reciprocal Rank Fusion to fetch the top 4 exact policy passages.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <div class="step-icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="step-title">Grounded Synthesis</h3>
+                    <p class="step-text">Azure OpenAI synthesizes a clear, accurate answer with collapsible references to specific PDF documents, chunk IDs, and page numbers.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Features Section -->
+        <section id="features" class="landing-section">
+            <div class="section-header">
+                <span class="section-badge">Capabilities</span>
+                <h2 class="section-title">Engineered for Enterprise Accuracy</h2>
+                <p class="section-description">Key capabilities that distinguish Nexus from ungrounded consumer chatbots.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-cyan">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h3>Grounded Answers</h3>
+                    <p>All policy responses are strictly constrained to indexed corporate documents, preventing model hallucination.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-indigo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </div>
+                    <h3>Source Citations</h3>
+                    <p>Every response includes verifiable citations indicating the exact PDF filename, chunk identifier, and source page number.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-emerald">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    </div>
+                    <h3>Multi-turn Conversations</h3>
+                    <p>Ask follow-up questions naturally. Client-side memory maintains conversation context across multiple exchanges.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-amber">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <h3>Safe "Not Found" Handling</h3>
+                    <p>When an internal document does not cover a topic, Nexus transparently admits the gap instead of fabricating rules.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon feature-icon-purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                    </div>
+                    <h3>Hybrid Search (BM25 + Vector)</h3>
+                    <p>Combines exact keyword matching for policy codes and numeric limits with 1536-dimensional semantic vector search.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Architecture Section -->
+        <section id="architecture" class="landing-section">
+            <div class="section-header">
+                <span class="section-badge">System Design</span>
+                <h2 class="section-title">End-to-End Architecture</h2>
+                <p class="section-description">High-performance RAG pipeline bridging browser clients, Flask API, and Azure cloud services.</p>
+            </div>
+
+            <div class="architecture-container">
+                <!-- Clean SVG Box Diagram -->
+                <div class="svg-diagram-wrapper">
+                    <svg viewBox="0 0 880 340" class="arch-svg" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="grad-client" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.05"/>
+                            </linearGradient>
+                            <linearGradient id="grad-flask" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#6366f1" stop-opacity="0.05"/>
+                            </linearGradient>
+                            <linearGradient id="grad-agent" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.05"/>
+                            </linearGradient>
+                            <linearGradient id="grad-search" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#10b981" stop-opacity="0.05"/>
+                            </linearGradient>
+                            <linearGradient id="grad-blob" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.2"/>
+                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>
+                            </linearGradient>
+                            
+                            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#6366f1" />
+                            </marker>
+                            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+                            </marker>
+                        </defs>
+
+                        <!-- Box 1: Browser Client -->
+                        <g transform="translate(30, 90)">
+                            <rect width="140" height="150" rx="12" fill="url(#grad-client)" stroke="#38bdf8" stroke-width="1.5"/>
+                            <circle cx="70" cy="40" r="20" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+                            <path d="M 62 40 L 78 40 M 70 32 L 70 48" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+                            <text x="70" y="85" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="13">Client Browser</text>
+                            <text x="70" y="105" text-anchor="middle" fill="#94a3b8" font-family="Inter" font-size="10">HTML5 / Vanilla JS</text>
+                            <text x="70" y="125" text-anchor="middle" fill="#38bdf8" font-family="Inter" font-size="9">Session Memory</text>
+                        </g>
+
+                        <!-- Arrow 1 -> 2 -->
+                        <path d="M 170 165 L 215 165" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow-cyan)"/>
+
+                        <!-- Box 2: Flask API Gateway -->
+                        <g transform="translate(220, 90)">
+                            <rect width="140" height="150" rx="12" fill="url(#grad-flask)" stroke="#6366f1" stroke-width="1.5"/>
+                            <circle cx="70" cy="40" r="20" fill="#0f172a" stroke="#6366f1" stroke-width="1.5"/>
+                            <text x="70" y="46" text-anchor="middle" fill="#6366f1" font-family="Outfit" font-weight="700" font-size="16">F</text>
+                            <text x="70" y="85" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="13">Flask Backend</text>
+                            <text x="70" y="105" text-anchor="middle" fill="#94a3b8" font-family="Inter" font-size="10">Entra ID Auth Gate</text>
+                            <text x="70" y="125" text-anchor="middle" fill="#6366f1" font-family="Inter" font-size="9">Input Sanitizer</text>
+                        </g>
+
+                        <!-- Arrow 2 -> 3 -->
+                        <path d="M 360 165 L 405 165" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- Box 3: Custom Agent Loop -->
+                        <g transform="translate(410, 90)">
+                            <rect width="140" height="150" rx="12" fill="url(#grad-agent)" stroke="#8b5cf6" stroke-width="1.5"/>
+                            <circle cx="70" cy="40" r="20" fill="#0f172a" stroke="#8b5cf6" stroke-width="1.5"/>
+                            <path d="M 63 36 L 77 36 L 70 48 Z" fill="#8b5cf6"/>
+                            <text x="70" y="85" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="13">Custom Agent</text>
+                            <text x="70" y="105" text-anchor="middle" fill="#94a3b8" font-family="Inter" font-size="10">Tool Calling Loop</text>
+                            <text x="70" y="125" text-anchor="middle" fill="#a78bfa" font-family="Inter" font-size="9">Max 3 Iterations</text>
+                        </g>
+
+                        <!-- Arrow 3 -> 4 (Top & Bottom Branches) -->
+                        <path d="M 550 140 L 595 120" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+                        <path d="M 550 190 L 595 210" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+
+                        <!-- Box 4A: Azure AI Search & OpenAI -->
+                        <g transform="translate(600, 30)">
+                            <rect width="160" height="110" rx="12" fill="url(#grad-search)" stroke="#10b981" stroke-width="1.5"/>
+                            <text x="80" y="35" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="12">Azure AI Search</text>
+                            <text x="80" y="55" text-anchor="middle" fill="#94a3b8" font-family="Inter" font-size="10">Hybrid Search (BM25+Dense)</text>
+                            <text x="80" y="75" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="12">Azure OpenAI</text>
+                            <text x="80" y="95" text-anchor="middle" fill="#34d399" font-family="Inter" font-size="9">gpt-4.1-mini & 1536-d Embeddings</text>
+                        </g>
+
+                        <!-- Box 4B: Azure Blob Storage -->
+                        <g transform="translate(600, 180)">
+                            <rect width="160" height="110" rx="12" fill="url(#grad-blob)" stroke="#f59e0b" stroke-width="1.5"/>
+                            <text x="80" y="45" text-anchor="middle" fill="#f8fafc" font-family="Inter" font-weight="600" font-size="12">Azure Blob Storage</text>
+                            <text x="80" y="70" text-anchor="middle" fill="#94a3b8" font-family="Inter" font-size="10">Source Policy Documents</text>
+                            <text x="80" y="90" text-anchor="middle" fill="#fbbf24" font-family="Inter" font-size="9">Private Container (PDFs)</text>
+                        </g>
+
+                        <!-- Ingestion Arrow: Blob -> Search -->
+                        <path d="M 680 180 L 680 148" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+                    </svg>
+                </div>
+
+                <div class="arch-captions-grid">
+                    <div class="arch-caption-card">
+                        <h4>1. Client Layer</h4>
+                        <p>Minimalist chat interface with client-side conversation memory and typing feedback.</p>
+                    </div>
+                    <div class="arch-caption-card">
+                        <h4>2. Flask Gateway</h4>
+                        <p>Secured with Microsoft Entra ID OAuth 2.0 and strict email allow-list enforcement.</p>
+                    </div>
+                    <div class="arch-caption-card">
+                        <h4>3. Agent Reasoning</h4>
+                        <p>Autonomously inspects question intent and orchestrates grounded document searches.</p>
+                    </div>
+                    <div class="arch-caption-card">
+                        <h4>4. Azure AI Cloud</h4>
+                        <p>Hybrid RRF retrieval from indexed policy chunks and synthesis via Foundry chat models.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 5. Academic Prototype Footer -->
+    <footer class="landing-footer">
+        <div class="footer-container">
+            <div class="footer-disclaimer">
+                <div class="disclaimer-badge">Academic Prototype Notice</div>
+                <p>
+                    This is an academic prototype (Chitkara University AI-103, Topic 28: Enterprise Knowledge Agent) 
+                    using synthetic, fictional data for a fictional company ("Acme Corp"). No real company data, 
+                    trademarks, or copyrighted material is used.
+                </p>
+            </div>
+
+            <div class="footer-meta">
+                <div class="team-info">
+                    <strong>Chitkara University — INBIOT AI-103</strong> &bull; Group 10 (Topic 28)
+                </div>
+                <div class="team-names">
+                    Team Members: Bhavya Kakkar, Saamya Singh, Varinda, Garima, Shriya
+                </div>
+                <div class="copyright-info">
+                    &copy; 2026 Nexus Enterprise Knowledge Assistant. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -29,6 +29,11 @@ REQUIRED_VARS = [
     "AZURE_SEARCH_API_KEY",
     "AZURE_SEARCH_INDEX_NAME",
     "FLASK_PORT",
+    "FLASK_SECRET_KEY",
+    "ENTRA_CLIENT_ID",
+    "ENTRA_CLIENT_SECRET",
+    "ENTRA_TENANT_ID",
+    "ALLOWED_USER_EMAILS",
 ]
 
 # Identify any missing or empty required variables
@@ -63,3 +68,21 @@ AZURE_SEARCH_INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX_NAME", "").strip()
 # Flask Application Configuration
 FLASK_PORT = int(os.getenv("FLASK_PORT", "5000"))
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "False").strip().lower() in ("true", "1", "yes")
+FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "").strip()
+
+# Microsoft Entra ID (Azure AD) Authentication Configuration
+ENTRA_CLIENT_ID = os.getenv("ENTRA_CLIENT_ID", "").strip()
+ENTRA_CLIENT_SECRET = os.getenv("ENTRA_CLIENT_SECRET", "").strip()
+ENTRA_TENANT_ID = os.getenv("ENTRA_TENANT_ID", "").strip()
+ENTRA_REDIRECT_URI = os.getenv("ENTRA_REDIRECT_URI", "").strip() or f"http://localhost:{FLASK_PORT}/auth/callback"
+ENTRA_AUTHORITY = f"https://login.microsoftonline.com/{ENTRA_TENANT_ID}"
+ENTRA_SCOPES = ["User.Read"]
+
+
+# Allowed user emails list (stripped and lowercased for case-insensitive verification)
+ALLOWED_USER_EMAILS = [
+    email.strip().lower()
+    for email in os.getenv("ALLOWED_USER_EMAILS", "").split(",")
+    if email.strip()
+]
+
